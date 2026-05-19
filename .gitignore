@@ -1,3 +1,11 @@
+# ─── Archivos de planificación y AI (solo locales) ───────────────────────────
+AGENTS.md
+CLAUDE.md
+PLAN_MAESTRO.md
+scripts/
+docs/
+.logs/
+
 # ─── Variables de entorno ────────────────────────────────────────────────────
 .env
 .env.*
@@ -56,3 +64,5 @@ Icon
 # ─── OS ──────────────────────────────────────────────────────────────────────
 Thumbs.db
 Desktop.ini
+.vercel
+.env*.local
