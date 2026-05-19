@@ -4,20 +4,20 @@ Portfolio de Carlos Armando Guerra — Migración completa desde Emergent a Next
 
 ## Stack
 
-| Capa | Tecnología |
-|------|-----------|
-| Framework | Next.js 16 App Router |
-| Lenguaje | TypeScript |
-| Package manager | pnpm |
-| DB | NeonDB (PostgreSQL) |
-| ORM | Prisma |
-| Auth | Better Auth + TOTP |
-| Imágenes | Cloudinary |
-| Email | Resend |
-| UI | shadcn/ui + Tailwind v4 |
-| Forms | React Hook Form + Zod |
-| i18n | next-intl (es/en) |
-| Deploy | Vercel |
+| Capa            | Tecnología              |
+| --------------- | ----------------------- |
+| Framework       | Next.js 16 App Router   |
+| Lenguaje        | TypeScript              |
+| Package manager | pnpm                    |
+| DB              | NeonDB (PostgreSQL)     |
+| ORM             | Prisma                  |
+| Auth            | Better Auth + TOTP      |
+| Imágenes        | Cloudinary              |
+| Email           | Resend                  |
+| UI              | shadcn/ui + Tailwind v4 |
+| Forms           | React Hook Form + Zod   |
+| i18n            | next-intl (es/en)       |
+| Deploy          | Vercel                  |
 
 ## Comandos
 

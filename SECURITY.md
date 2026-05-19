@@ -8,6 +8,7 @@ it privately. **Do not open a public issue.**
 Contact: https://github.com/gonzaloyacante
 
 Provide as much detail as possible:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
