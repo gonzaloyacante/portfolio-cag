@@ -1,6 +1,6 @@
 name: Security Vulnerability
 description: Report a security vulnerability privately
-labels: ["security"]
+labels: ['security']
 body:
   - type: markdown
     attributes:
