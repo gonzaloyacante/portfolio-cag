@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "title": "Carlos Armando Guerra — Ingeniero Electrónico de Control Industrial",
+    "description": "Más de 30 años optimizando líneas de producción industrial. Termoformado, BOPP, metalizado, extrusión PP, eficiencia energética."
+  },
+  "admin": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando…",
+    "saving": "Guardando…",
+    "error": "Error al guardar.",
+    "delete_confirm": "¿Eliminar este registro?",
+    "add": "Agregar"
+  },
+  "a11y": {
+    "skip_to_content": "Ir al contenido principal",
+    "open_menu": "Abrir menú",
+    "close_menu": "Cerrar menú",
+    "lang_switcher": "Selector de idioma",
+    "back_to_top": "Volver arriba",
+    "whatsapp_sticky": "Contactar por WhatsApp"
+  }
+}

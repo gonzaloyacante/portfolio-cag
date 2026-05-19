@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "title": "Carlos Armando Guerra — Industrial Control Electronic Engineer",
+    "description": "30+ years optimizing industrial production lines. Thermoforming, BOPP, metallization, PP extrusion, energy efficiency."
+  },
+  "admin": {
+    "login": "Log in",
+    "logout": "Log out",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "error": "Error saving.",
+    "delete_confirm": "Delete this record?",
+    "add": "Add"
+  },
+  "a11y": {
+    "skip_to_content": "Skip to main content",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu",
+    "lang_switcher": "Language switcher",
+    "back_to_top": "Back to top",
+    "whatsapp_sticky": "Contact via WhatsApp"
+  }
+}
