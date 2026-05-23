@@ -67,6 +67,46 @@
     "desc": "Testimonios anonimizados de plant managers, jefes de mantenimiento y directores técnicos con quienes he trabajado en planta.",
     "disclaimer": "* Testimonios parafraseados y anonimizados por confidencialidad. Referencias verificables disponibles bajo solicitud."
   },
+  "timeline": {
+    "overline": "TRAYECTORIA INDUSTRIAL",
+    "title": "Recorrido técnico, planta a planta",
+    "desc": "Una carrera construida en piso de fábrica, frente a tableros, extrusoras, termoformadoras y líneas BOPP."
+  },
+  "faq": {
+    "overline": "PREGUNTAS FRECUENTES",
+    "title": "Cómo es trabajar conmigo",
+    "desc": "Respuestas directas a las consultas más comunes de plant managers y directores técnicos antes de iniciar un proyecto."
+  },
+  "contact": {
+    "overline": "CONTACTO DIRECTO",
+    "title": "Hablemos de tu planta.",
+    "desc": "Atiendo consultas técnicas, auditorías, troubleshooting y proyectos de optimización para industrias plásticas, BOPP y manufactura en general.",
+    "direct": {
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "linkedin": "LinkedIn",
+      "location": "Ubicación"
+    },
+    "form": {
+      "name": "Nombre y empresa",
+      "email": "Email corporativo",
+      "phone": "Teléfono (opcional)",
+      "message": "Cuénteme sobre el proyecto, la planta o la consulta",
+      "submit": "Enviar por WhatsApp",
+      "note": "Al enviar, se abrirá WhatsApp con su consulta precargada. Su mensaje queda guardado para dar seguimiento.",
+      "success": "✓ Abriendo WhatsApp con su mensaje precargado…",
+      "validation": "Por favor complete nombre, email y mensaje.",
+      "wa_prefix": "Hola Carlos, le escribo desde su sitio web."
+    }
+  },
+  "footer": {
+    "role": "Ingeniero Electrónico de Control Industrial",
+    "rights": "Todos los derechos reservados.",
+    "back": "Volver arriba",
+    "tag": "Consultoría industrial · Termoformado · Extrusión PP · BOPP · Metalizado · Eficiencia Energética",
+    "contact_label": "CONTACTO",
+    "site_version": "SITIO / V.1.0"
+  },
   "hero": {
     "tag_id": "ID · 0001 / CAGG",
     "tag_location": "BUENOS AIRES · AR",
