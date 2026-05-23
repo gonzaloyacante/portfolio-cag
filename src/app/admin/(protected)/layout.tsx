@@ -17,5 +17,5 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
 async function AuthGate({ children }: { children: ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect('/admin/login');
-  return <AdminLayout>{children}</AdminLayout>;
+  return <AdminLayout userEmail={session.user.email}>{children}</AdminLayout>;
 }
