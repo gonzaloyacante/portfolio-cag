@@ -12,7 +12,7 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout userEmail={session.user.email}>
       <main className="p-6">
         <p className="text-label tracking-label text-muted-foreground mb-1 font-mono uppercase">
           Admin · Dashboard
