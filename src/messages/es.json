@@ -21,5 +21,32 @@
     "lang_switcher": "Selector de idioma",
     "back_to_top": "Volver arriba",
     "whatsapp_sticky": "Contactar por WhatsApp"
+  },
+  "header": {
+    "role": "Ing. Electrónico Industrial",
+    "logo_label": "Carlos A. Guerra — Inicio"
+  },
+  "nav": {
+    "experience": "Experiencia",
+    "process": "Proceso",
+    "services": "Servicios",
+    "projects": "Proyectos",
+    "testimonials": "Voces",
+    "faq": "FAQ",
+    "contact": "Contacto",
+    "cta": "Contactar"
+  },
+  "brands": {
+    "overline": "MAQUINARIA Y SISTEMAS",
+    "title": "Marcas industriales con experiencia comprobada",
+    "desc": "Operación, mantenimiento, diagnóstico y puesta a punto en líneas y sistemas de los principales fabricantes mundiales."
+  },
+  "hero": {
+    "tag_id": "ID · 0001 / CAGG",
+    "tag_location": "BUENOS AIRES · AR",
+    "tag_est": "EST. 30+ YR",
+    "fig_label": "FIG. 01",
+    "portrait_name": "C. A. Guerra",
+    "portrait_origin": "AR · BA"
   }
 }

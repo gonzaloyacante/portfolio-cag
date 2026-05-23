@@ -49,9 +49,16 @@
   /* Typography — tamaños y trackings específicos del sistema de diseño */
   --text-overline: 0.6875rem;
   --text-label: 0.625rem;
+  --text-display-sm: 2.75rem;
+  --text-display-xl: 5.5rem;
   --tracking-overline: 0.2em;
   --tracking-label: 0.25em;
   --tracking-code: 0.5em;
+  --tracking-display: 0.05em;
+  --leading-hero: 0.95;
+
+  /* Layout constraints */
+  --max-h-mobile-menu: 40rem;
 
   /* z-index scale — todos los elementos posicionados usan estas vars */
   --z-intro: 9999;
