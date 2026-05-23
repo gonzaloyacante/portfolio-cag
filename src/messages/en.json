@@ -67,6 +67,46 @@
     "desc": "Anonymized testimonials from plant managers, maintenance leaders and technical directors I've worked with on the shop floor.",
     "disclaimer": "* Testimonials paraphrased and anonymized for confidentiality. Verifiable references available on request."
   },
+  "timeline": {
+    "overline": "INDUSTRIAL CAREER",
+    "title": "Plant by plant, a technical journey",
+    "desc": "A career built on the factory floor, in front of cabinets, extruders, thermoformers and BOPP lines."
+  },
+  "faq": {
+    "overline": "FREQUENTLY ASKED",
+    "title": "What working with me looks like",
+    "desc": "Direct answers to the most common questions from plant managers and technical directors before starting a project."
+  },
+  "contact": {
+    "overline": "DIRECT CONTACT",
+    "title": "Let's talk about your plant.",
+    "desc": "I take technical inquiries, audits, troubleshooting and optimization projects for plastics, BOPP and general manufacturing industries.",
+    "direct": {
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "linkedin": "LinkedIn",
+      "location": "Location"
+    },
+    "form": {
+      "name": "Name and company",
+      "email": "Corporate email",
+      "phone": "Phone (optional)",
+      "message": "Tell me about the project, plant or inquiry",
+      "submit": "Send via WhatsApp",
+      "note": "On submit, WhatsApp will open with your inquiry pre-filled. Your message is saved for follow-up.",
+      "success": "✓ Opening WhatsApp with your message pre-loaded…",
+      "validation": "Please fill in name, email and message.",
+      "wa_prefix": "Hi Carlos, I'm reaching out from your website."
+    }
+  },
+  "footer": {
+    "role": "Industrial Control Electronic Engineer",
+    "rights": "All rights reserved.",
+    "back": "Back to top",
+    "tag": "Industrial consulting · Thermoforming · PP extrusion · BOPP · Metallization · Energy efficiency",
+    "contact_label": "CONTACT",
+    "site_version": "SITE / V.1.0"
+  },
   "hero": {
     "tag_id": "ID · 0001 / CAGG",
     "tag_location": "BUENOS AIRES · AR",

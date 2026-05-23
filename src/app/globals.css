@@ -59,6 +59,7 @@
 
   /* Layout constraints */
   --max-h-mobile-menu: 40rem;
+  --max-h-faq-panel: 26.25rem;
 
   /* z-index scale — todos los elementos posicionados usan estas vars */
   --z-intro: 9999;
