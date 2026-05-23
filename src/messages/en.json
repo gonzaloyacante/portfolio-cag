@@ -21,5 +21,32 @@
     "lang_switcher": "Language switcher",
     "back_to_top": "Back to top",
     "whatsapp_sticky": "Contact via WhatsApp"
+  },
+  "header": {
+    "role": "Industrial Control Engineer",
+    "logo_label": "Carlos A. Guerra — Home"
+  },
+  "nav": {
+    "experience": "Experience",
+    "process": "Process",
+    "services": "Services",
+    "projects": "Projects",
+    "testimonials": "Voices",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "cta": "Get in touch"
+  },
+  "brands": {
+    "overline": "MACHINERY & SYSTEMS",
+    "title": "Industrial brands with proven hands-on experience",
+    "desc": "Operation, maintenance, troubleshooting and commissioning across lines and systems from the world's leading manufacturers."
+  },
+  "hero": {
+    "tag_id": "ID · 0001 / CAGG",
+    "tag_location": "BUENOS AIRES · AR",
+    "tag_est": "EST. 30+ YR",
+    "fig_label": "FIG. 01",
+    "portrait_name": "C. A. Guerra",
+    "portrait_origin": "AR · BA"
   }
 }
