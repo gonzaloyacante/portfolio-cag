@@ -3,6 +3,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { routing } from '@/i18n/routing';
 import { fontDisplay, fontMono, fontSans } from '@/lib/fonts';
 
@@ -32,6 +33,7 @@ export default async function LocaleLayout({
         className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} flex min-h-full flex-col antialiased`}
       >
         <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <GoogleAnalytics />
       </body>
     </html>
   );
