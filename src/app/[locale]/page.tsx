@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { unstable_cache } from 'next/cache';
+import Script from 'next/script';
 
 import { BrandsMarquee } from '@/components/landing/BrandsMarquee';
 import { Contact } from '@/components/landing/Contact';
@@ -20,6 +21,7 @@ import { Testimonials } from '@/components/landing/Testimonials';
 import { Timeline } from '@/components/landing/Timeline';
 import type { SectionMeta } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
+import { breadcrumbJsonLd, personJsonLd, websiteJsonLd } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -205,8 +207,60 @@ export default async function LandingPage({ params }: Props) {
     a: isEn ? f.aEn : f.aEs,
   }));
 
+  // Build the JSON-LD payload for structured data. Four pieces:
+  // - Person: identifies the site owner across the web
+  // - WebSite: tells search engines this is a real site
+  // - BreadcrumbList: the major sections of the page
+  // - FAQPage: the FAQ schema so the Q&A can show as rich results
+  const personLd = personJsonLd(locale as 'es' | 'en');
+  const websiteLd = websiteJsonLd(locale as 'es' | 'en');
+  const breadcrumbLd = breadcrumbJsonLd(locale as 'es' | 'en', [
+    { name: isEn ? 'Home' : 'Inicio', path: '/' },
+    ...SECTION_SLUGS.map((s) => ({
+      name: s,
+      path: `/#${s}`,
+    })),
+  ]);
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqEntries.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.a,
+      },
+    })),
+  };
+  const jsonLd = [personLd, websiteLd, breadcrumbLd, faqLd];
+
   return (
     <>
+      <Script
+        id="ld-person"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[0]) }}
+      />
+      <Script
+        id="ld-website"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[1]) }}
+      />
+      <Script
+        id="ld-breadcrumb"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[2]) }}
+      />
+      <Script
+        id="ld-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[3]) }}
+      />
       <Header />
       <SectionIndex />
       <main id="main-content">
