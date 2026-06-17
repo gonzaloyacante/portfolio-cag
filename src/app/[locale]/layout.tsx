@@ -50,6 +50,30 @@ export default async function LocaleLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#0a0a0a" />
+
+        {/* PWA: iOS status bar style, fullscreen-capable web app. */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="CAG Portfolio" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="CAG Portfolio" />
+
+        {/* Microsoft tile color for Edge / IE pinned sites. */}
+        <meta name="msapplication-TileColor" content="#0a0a0a" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+
+        {/*
+          Don't let mobile browsers auto-link phone numbers, emails
+          or addresses — that would break the typography of the
+          landing (and the contact section is already styled).
+        */}
+        <meta name="format-detection" content="telephone=no, email=no, address=no" />
+
+        {/* Misc. */}
+        <meta name="rating" content="general" />
+        <meta name="distribution" content="global" />
+        <meta name="revisit-after" content="7 days" />
       </head>
       <body
         className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} flex min-h-full flex-col antialiased`}
