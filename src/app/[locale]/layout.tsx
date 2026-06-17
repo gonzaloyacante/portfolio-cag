@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { WebVitals } from '@/components/WebVitals';
 import { routing } from '@/i18n/routing';
 import { fontDisplay, fontMono, fontSans } from '@/lib/fonts';
 import { defaultViewport } from '@/lib/viewport';
@@ -46,6 +47,7 @@ export default async function LocaleLayout({
         className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} flex min-h-full flex-col antialiased`}
       >
         <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <WebVitals />
         <GoogleAnalytics />
       </body>
     </html>
