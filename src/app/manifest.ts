@@ -14,6 +14,31 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#0a0a0a',
     lang: 'es',
     categories: ['technology', 'productivity', 'business'],
+    // App shortcuts — long-press the home-screen icon to see them.
+    // Also show in the install dialog / desktop taskbar.
+    shortcuts: [
+      {
+        name: 'Inicio',
+        short_name: 'Inicio',
+        description: 'Ver la landing pública',
+        url: '/es',
+        icons: [{ src: '/icon/192', sizes: '192x192', type: 'image/png' }],
+      },
+      {
+        name: 'Experiencia',
+        short_name: 'Experiencia',
+        description: 'Ver los proyectos y casos',
+        url: '/es#experience',
+        icons: [{ src: '/icon/192', sizes: '192x192', type: 'image/png' }],
+      },
+      {
+        name: 'Contacto',
+        short_name: 'Contacto',
+        description: 'Hablemos por WhatsApp o email',
+        url: '/es#contact',
+        icons: [{ src: '/icon/192', sizes: '192x192', type: 'image/png' }],
+      },
+    ],
     screenshots: [
       {
         src: '/apple-touch-startup-image',
@@ -55,5 +80,8 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'maskable',
       },
     ],
+    // Protocol handlers — let the PWA handle specific URLs from
+    // other apps (e.g. mailto: links to the contact email).
+    protocol_handlers: [],
   };
 }
