@@ -175,7 +175,14 @@ describe('security: error message sanitization', () => {
       new Error('Invalid API key 123456789012345')
     );
     const formData = new FormData();
-    formData.append('file', new Blob(['fake png'], { type: 'image/png' }));
+    // Real PNG signature so the magic-byte check passes and the request
+    // actually reaches the Cloudinary call.
+    formData.append(
+      'file',
+      new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])], {
+        type: 'image/png',
+      })
+    );
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(502);
