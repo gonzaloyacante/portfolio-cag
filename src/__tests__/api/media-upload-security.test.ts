@@ -148,18 +148,34 @@ describe('media upload: size validation', () => {
     expect(res.status).toBe(201);
   });
 
-  it('rejects zero-byte files (magic-byte check fails closed on empty buffer)', async () => {
-    // The magic-byte verifier short-circuits on empty buffers
-    // (`if (buffer.length === 0) return false`), so zero-byte uploads
-    // are rejected with 415 before the body ever reaches Cloudinary.
-    // A separate dedicated size-zero check is still a worthwhile
-    // follow-up (more explicit 400 instead of 415), but the practical
-    // gap is closed.
+  it('rejects zero-byte files with 400 (File is empty)', async () => {
+    // The route has a dedicated size-zero check that runs before
+    // MIME allowlist and magic-byte checks, so an empty file is
+    // rejected with a clear "File is empty" 400 instead of a
+    // misleading 415 from the magic-byte verifier.
     const formData = new FormData();
     formData.append('file', new Blob([], { type: 'image/png' }));
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
-    expect(res.status).toBe(415);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe('File is empty');
+    // Cloudinary must never be called for an empty file.
+    const { cloudinary } = await import('@/lib/cloudinary');
+    expect(cloudinary.uploader.upload).not.toHaveBeenCalled();
+  });
+
+  it('rejects zero-byte files even with an allowed MIME', async () => {
+    // Boundary: even when the declared MIME is in the allowlist, a
+    // 0-byte file is rejected with the same explicit error. The
+    // check is on size, not on MIME.
+    for (const mime of ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']) {
+      const formData = new FormData();
+      formData.append('file', new Blob([], { type: mime }));
+      const req = new Request('https://x.com', { method: 'POST', body: formData });
+      const res = await mediaPOST(req, { params: Promise.resolve({}) });
+      expect(res.status, `${mime} empty file should be 400`).toBe(400);
+    }
   });
 });
 
