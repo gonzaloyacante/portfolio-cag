@@ -24,6 +24,25 @@ vi.mock('next/headers', () => ({ headers }));
 
 const MEDIA = { id: 'm-1', publicId: 'pid', url: 'u', secureUrl: 'su', format: 'jpg' };
 
+// Real magic bytes for each allowed MIME. The route verifies the
+// body against the declared Content-Type, so tests must send real
+// signatures for the happy path.
+const REAL_BYTES = {
+  'image/jpeg': new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]),
+  'image/png': new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  'image/gif': new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+  'image/webp': new Uint8Array([
+    0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+  ]),
+  'image/svg+xml': new TextEncoder().encode(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>'
+  ),
+} as const;
+
+function makeFile(type: keyof typeof REAL_BYTES): Blob {
+  return new Blob([REAL_BYTES[type]], { type });
+}
+
 describe('/api/admin/media', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -132,9 +151,15 @@ describe('/api/admin/media', () => {
       // For each type, mock findUnique to return null so the create path is taken
       prisma.mediaFile.findUnique.mockReset();
       prisma.mediaFile.findUnique.mockResolvedValue(null);
-      for (const type of ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml']) {
+      for (const type of [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/svg+xml',
+      ] as const) {
         const fd = new FormData();
-        fd.append('file', new Blob(['x'], { type }));
+        fd.append('file', makeFile(type));
         const req = new Request('https://x.com', { method: 'POST', body: fd });
         const res = await POST(req, { params: Promise.resolve({}) });
         expect(res.status, `${type} should be accepted`).toBe(201);
@@ -154,7 +179,7 @@ describe('/api/admin/media', () => {
       prisma.mediaFile.findUnique.mockReset();
       prisma.mediaFile.findUnique.mockResolvedValue(null);
       const fd = new FormData();
-      fd.append('file', new Blob(['x'], { type: 'image/jpeg' }));
+      fd.append('file', makeFile('image/jpeg'));
       const req = new Request('https://x.com', { method: 'POST', body: fd });
       await POST(req, { params: Promise.resolve({}) });
       expect(cloudinary.uploader.upload).toHaveBeenCalled();
@@ -170,7 +195,7 @@ describe('/api/admin/media', () => {
       });
       prisma.mediaFile.findUnique.mockResolvedValueOnce(MEDIA);
       const fd = new FormData();
-      fd.append('file', new Blob(['x'], { type: 'image/jpeg' }));
+      fd.append('file', makeFile('image/jpeg'));
       const req = new Request('https://x.com', { method: 'POST', body: fd });
       const res = await POST(req, { params: Promise.resolve({}) });
       expect(res.status).toBe(200);
@@ -179,7 +204,7 @@ describe('/api/admin/media', () => {
     it('returns 502 when Cloudinary upload fails', async () => {
       cloudinary.uploader.upload.mockRejectedValueOnce(new Error('cloudinary down'));
       const fd = new FormData();
-      fd.append('file', new Blob(['x'], { type: 'image/jpeg' }));
+      fd.append('file', makeFile('image/jpeg'));
       const req = new Request('https://x.com', { method: 'POST', body: fd });
       const res = await POST(req, { params: Promise.resolve({}) });
       expect(res.status).toBe(502);

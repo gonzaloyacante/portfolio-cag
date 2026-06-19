@@ -56,7 +56,22 @@ beforeEach(() => {
  */
 
 describe('media upload: MIME type validation', () => {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+  // Real magic bytes / signatures for each allowed MIME. The route
+  // performs a body-level consistency check on top of the Content-Type
+  // header (see src/lib/magic-bytes.ts), so happy-path tests must
+  // send real signatures.
+  const REAL_BYTES: Record<string, Uint8Array> = {
+    'image/jpeg': new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]),
+    'image/png': new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    'image/gif': new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+    'image/webp': new Uint8Array([
+      0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+    ]),
+    'image/svg+xml': new TextEncoder().encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>'
+    ),
+  };
+  const allowed = Object.keys(REAL_BYTES);
   const denied = [
     'image/jpg',
     'image/bmp',
@@ -74,9 +89,9 @@ describe('media upload: MIME type validation', () => {
   ];
 
   for (const mime of allowed) {
-    it(`accepts ${mime}`, async () => {
+    it(`accepts ${mime} with valid body signature`, async () => {
       const formData = new FormData();
-      formData.append('file', new Blob(['fake content'], { type: mime }));
+      formData.append('file', new Blob([Buffer.from(REAL_BYTES[mime]!)], { type: mime }));
       const req = new Request('https://x.com', { method: 'POST', body: formData });
       const res = await mediaPOST(req, { params: Promise.resolve({}) });
       expect(res.status).toBe(201);
@@ -95,10 +110,20 @@ describe('media upload: MIME type validation', () => {
 });
 
 describe('media upload: size validation', () => {
+  // Build a buffer of `n` bytes prefixed with a valid PNG signature,
+  // so size tests are not accidentally caught by the magic-byte check.
+  function pngBuffer(n: number): Uint8Array {
+    const out = new Uint8Array(n);
+    out.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+    return out;
+  }
+
   it('rejects files over 10 MB with 413', async () => {
     const formData = new FormData();
-    const big = new Uint8Array(11 * 1024 * 1024);
-    formData.append('file', new Blob([big], { type: 'image/png' }));
+    formData.append(
+      'file',
+      new Blob([Buffer.from(pngBuffer(11 * 1024 * 1024))], { type: 'image/png' })
+    );
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(413);
@@ -106,8 +131,10 @@ describe('media upload: size validation', () => {
 
   it('accepts files exactly at 10 MB (boundary)', async () => {
     const formData = new FormData();
-    const exact = new Uint8Array(10 * 1024 * 1024);
-    formData.append('file', new Blob([exact], { type: 'image/png' }));
+    formData.append(
+      'file',
+      new Blob([Buffer.from(pngBuffer(10 * 1024 * 1024))], { type: 'image/png' })
+    );
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(201);
@@ -115,24 +142,24 @@ describe('media upload: size validation', () => {
 
   it('accepts files just under 10 MB', async () => {
     const formData = new FormData();
-    const small = new Uint8Array(1024 * 1024); // 1 MB
-    formData.append('file', new Blob([small], { type: 'image/png' }));
+    formData.append('file', new Blob([Buffer.from(pngBuffer(1024 * 1024))], { type: 'image/png' }));
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(201);
   });
 
-  it('rejects zero-byte files with 400 (documented gap: 0 bytes currently uploads)', async () => {
-    // GAP: The route checks `file.size > MAX_BYTES` but not `file.size === 0`.
-    // A zero-byte file currently passes. This test pins the current
-    // behavior so any future fix is intentional.
+  it('rejects zero-byte files (magic-byte check fails closed on empty buffer)', async () => {
+    // The magic-byte verifier short-circuits on empty buffers
+    // (`if (buffer.length === 0) return false`), so zero-byte uploads
+    // are rejected with 415 before the body ever reaches Cloudinary.
+    // A separate dedicated size-zero check is still a worthwhile
+    // follow-up (more explicit 400 instead of 415), but the practical
+    // gap is closed.
     const formData = new FormData();
     formData.append('file', new Blob([], { type: 'image/png' }));
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
-    // Current behavior: 201 (accepted). Update this assertion if the
-    // gap is closed.
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(415);
   });
 });
 
@@ -162,45 +189,133 @@ describe('media upload: file presence', () => {
   });
 });
 
-describe('media upload: magic byte gap (documented behavior)', () => {
+describe('media upload: magic byte enforcement (body vs Content-Type)', () => {
   /**
-   * The current implementation trusts the Content-Type header. A
-   * sophisticated attacker could:
-   * 1. Create a file with `Content-Type: image/png` header
-   * 2. Embed a malicious PHP/script payload in the file body
-   * 3. If Cloudinary is misconfigured to serve user-uploaded files
-   *    from the same origin, the script could be executed
+   * The route performs a body-level consistency check on top of the
+   * Content-Type header (see src/lib/magic-bytes.ts). A file whose
+   * declared MIME does not match its first bytes is rejected with 415
+   * before the body ever reaches Cloudinary. This closes the gap
+   * documented in the previous revision of this test file.
    *
-   * Cloudinary is not the same origin as the portfolio (different domain),
-   * and `resource_type: 'image'` is set. So the practical risk is low.
-   * But the route does not verify magic bytes, so it cannot detect a
-   * mismatched file. A future hardening step would compare the first 8
-   * bytes of the file against expected magic numbers:
-   *   PNG: 89 50 4E 47 0D 0A 1A 0A
-   *   JPEG: FF D8 FF
-   *   GIF: 47 49 46 38
-   *   WEBP: 52 49 46 46 ?? ?? ?? ?? 57 45 42 50
-   *
-   * These tests document the gap and assert on the current behavior
-   * (i.e., a file with image/png header and PHP body currently passes).
+   * For SVG (no fixed magic number) the check is content-based: the
+   * body is scanned for `<script>`, `<foreignObject>`, `javascript:`,
+   * and `data:text/html`.
    */
-  it('image/png with non-PNG body still uploads (magic byte gap)', async () => {
+  const mismatches: Array<{ mime: string; body: Uint8Array | string; label: string }> = [
+    { mime: 'image/png', body: '<?php echo "hello"; ?>', label: 'PHP body with image/png header' },
+    {
+      mime: 'image/png',
+      body: '<script>alert(1)</script>',
+      label: 'JS body with image/png header',
+    },
+    {
+      mime: 'image/jpeg',
+      body: new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      label: 'PNG bytes with image/jpeg header',
+    },
+    {
+      mime: 'image/gif',
+      body: new Uint8Array([0xff, 0xd8, 0xff, 0xe0]),
+      label: 'JPEG bytes with image/gif header',
+    },
+    {
+      mime: 'image/webp',
+      body: new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+      label: 'GIF bytes with image/webp header',
+    },
+    {
+      mime: 'image/png',
+      body: new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+      label: 'GIF bytes with image/png header',
+    },
+  ];
+
+  for (const { mime, body, label } of mismatches) {
+    it(`rejects ${label} with 415`, async () => {
+      const formData = new FormData();
+      // Normalize: string bodies go in as-is, Uint8Array bodies get
+      // copied into a fresh ArrayBuffer so the BlobPart type union
+      // resolves cleanly under strict TS.
+      const part: BlobPart = typeof body === 'string' ? body : new Uint8Array(body); // copy — satisfies BlobPart's ArrayBuffer-backed view
+      formData.append('file', new Blob([part], { type: mime }));
+      const req = new Request('https://x.com', { method: 'POST', body: formData });
+      const res = await mediaPOST(req, { params: Promise.resolve({}) });
+      expect(res.status).toBe(415);
+      // Cloudinary must never be called for a mismatched body.
+      const { cloudinary } = await import('@/lib/cloudinary');
+      expect(cloudinary.uploader.upload).not.toHaveBeenCalled();
+    });
+  }
+
+  it('rejects SVG with embedded <script> tag', async () => {
+    const evil = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>';
     const formData = new FormData();
-    const phpBody = '<?php echo "hello"; ?>';
-    formData.append('file', new Blob([phpBody], { type: 'image/png' }));
+    formData.append('file', new Blob([evil], { type: 'image/svg+xml' }));
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
-    // Currently 201 — magic byte check is not implemented
+    expect(res.status).toBe(415);
+  });
+
+  it('rejects SVG with <foreignObject>', async () => {
+    const evil =
+      '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><body onload="alert(1)"></body></foreignObject></svg>';
+    const formData = new FormData();
+    formData.append('file', new Blob([evil], { type: 'image/svg+xml' }));
+    const req = new Request('https://x.com', { method: 'POST', body: formData });
+    const res = await mediaPOST(req, { params: Promise.resolve({}) });
+    expect(res.status).toBe(415);
+  });
+
+  it('rejects SVG with javascript: URL', async () => {
+    const evil =
+      '<svg xmlns="http://www.w3.org/2000/svg"><a xlink:href="javascript:alert(1)"><text>x</text></a></svg>';
+    const formData = new FormData();
+    formData.append('file', new Blob([evil], { type: 'image/svg+xml' }));
+    const req = new Request('https://x.com', { method: 'POST', body: formData });
+    const res = await mediaPOST(req, { params: Promise.resolve({}) });
+    expect(res.status).toBe(415);
+  });
+
+  it('rejects SVG with data:text/html URI', async () => {
+    const evil =
+      '<svg xmlns="http://www.w3.org/2000/svg"><a xlink:href="data:text/html,<script>alert(1)</script>"><text>x</text></a></svg>';
+    const formData = new FormData();
+    formData.append('file', new Blob([evil], { type: 'image/svg+xml' }));
+    const req = new Request('https://x.com', { method: 'POST', body: formData });
+    const res = await mediaPOST(req, { params: Promise.resolve({}) });
+    expect(res.status).toBe(415);
+  });
+
+  it('strips XML comments before SVG content scan', async () => {
+    // Payload hidden in a comment is harmless — comments are stripped first.
+    const benign =
+      '<svg xmlns="http://www.w3.org/2000/svg"><!-- <script>alert(1)</script> --></svg>';
+    const formData = new FormData();
+    formData.append('file', new Blob([benign], { type: 'image/svg+xml' }));
+    const req = new Request('https://x.com', { method: 'POST', body: formData });
+    const res = await mediaPOST(req, { params: Promise.resolve({}) });
+    expect(res.status).toBe(201);
+  });
+
+  it('strips CDATA blocks before SVG content scan', async () => {
+    const benign =
+      '<svg xmlns="http://www.w3.org/2000/svg"><![CDATA[ <script>alert(1)</script> ]]></svg>';
+    const formData = new FormData();
+    formData.append('file', new Blob([benign], { type: 'image/svg+xml' }));
+    const req = new Request('https://x.com', { method: 'POST', body: formData });
+    const res = await mediaPOST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(201);
   });
 });
 
 describe('media upload: idempotency on duplicate public_id', () => {
+  const realPng = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00]);
+
   it('returns the existing record (200) instead of creating a new one', async () => {
     const existing = { id: 'm1', publicId: 'p', url: 'u', secureUrl: 's', format: 'png' };
     prismaMock.mediaFile.findUnique.mockResolvedValueOnce(existing);
     const formData = new FormData();
-    formData.append('file', new Blob(['content'], { type: 'image/png' }));
+    formData.append('file', new Blob([realPng], { type: 'image/png' }));
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(200);
@@ -213,7 +328,7 @@ describe('media upload: idempotency on duplicate public_id', () => {
   it('creates a new record when public_id is new', async () => {
     prismaMock.mediaFile.findUnique.mockResolvedValueOnce(null);
     const formData = new FormData();
-    formData.append('file', new Blob(['content'], { type: 'image/png' }));
+    formData.append('file', new Blob([realPng], { type: 'image/png' }));
     const req = new Request('https://x.com', { method: 'POST', body: formData });
     const res = await mediaPOST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(201);
