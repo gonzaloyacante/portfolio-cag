@@ -52,6 +52,15 @@ type CrudModule = {
     PUT: (req: Request, ctx: { params: Promise<{ id: string }> }) => Promise<Response>;
     DELETE: (req: Request, ctx: { params: Promise<{ id: string }> }) => Promise<Response>;
   };
+  /**
+   * POST accepts an optional Request. If omitted, the module builds
+   * a Request from `validPayload` (used by the happy-path tests).
+   * Tests that need to assert behavior on a different request shape
+   * (e.g. missing body) can pass their own Request in. Keeping the
+   * static POST handler at the call site (no dynamic import) keeps
+   * Vite's `dynamic-import-vars` plugin happy.
+   */
+  POST: (req?: Request) => Promise<Response>;
   validPayload: Record<string, unknown>;
   model: keyof typeof prisma;
 };
@@ -60,12 +69,14 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   brands: {
     list: { GET },
     item: { PUT, DELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({ name: 'A' }),
-      });
-      return POST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({ name: 'A' }),
+        });
+      return POST(r, { params: Promise.resolve({}) });
     },
     validPayload: { name: 'A' },
     model: 'brand',
@@ -73,20 +84,22 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   process: {
     list: { GET: ProcessGET },
     item: { PUT: ProcessPUT, DELETE: ProcessDELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({
-          code: '1',
-          titleEs: 'a',
-          titleEn: 'a',
-          bodyEs: 'a',
-          bodyEn: 'a',
-          deliverableEs: 'a',
-          deliverableEn: 'a',
-        }),
-      });
-      return ProcessPOST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({
+            code: '1',
+            titleEs: 'a',
+            titleEn: 'a',
+            bodyEs: 'a',
+            bodyEn: 'a',
+            deliverableEs: 'a',
+            deliverableEn: 'a',
+          }),
+        });
+      return ProcessPOST(r, { params: Promise.resolve({}) });
     },
     validPayload: {
       code: '1',
@@ -102,12 +115,14 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   services: {
     list: { GET: ServicesGET },
     item: { PUT: ServicesPUT, DELETE: ServicesDELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({ labelEs: 'a', labelEn: 'a' }),
-      });
-      return ServicesPOST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({ labelEs: 'a', labelEn: 'a' }),
+        });
+      return ServicesPOST(r, { params: Promise.resolve({}) });
     },
     validPayload: { labelEs: 'a', labelEn: 'a' },
     model: 'service',
@@ -115,24 +130,26 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   projects: {
     list: { GET: ProjectsGET },
     item: { PUT: ProjectsPUT, DELETE: ProjectsDELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({
-          tag: 'a',
-          periodEs: 'a',
-          periodEn: 'a',
-          titleEs: 'a',
-          titleEn: 'a',
-          challengeEs: 'a',
-          challengeEn: 'a',
-          interventionEs: 'a',
-          interventionEn: 'a',
-          outcomeEs: 'a',
-          outcomeEn: 'a',
-        }),
-      });
-      return ProjectsPOST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({
+            tag: 'a',
+            periodEs: 'a',
+            periodEn: 'a',
+            titleEs: 'a',
+            titleEn: 'a',
+            challengeEs: 'a',
+            challengeEn: 'a',
+            interventionEs: 'a',
+            interventionEn: 'a',
+            outcomeEs: 'a',
+            outcomeEn: 'a',
+          }),
+        });
+      return ProjectsPOST(r, { params: Promise.resolve({}) });
     },
     validPayload: {
       tag: 'a',
@@ -152,12 +169,14 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   results: {
     list: { GET: ResultsGET },
     item: { PUT: ResultsPUT, DELETE: ResultsDELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({ kEs: 'a', kEn: 'a', vEs: 'a', vEn: 'a' }),
-      });
-      return ResultsPOST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({ kEs: 'a', kEn: 'a', vEs: 'a', vEn: 'a' }),
+        });
+      return ResultsPOST(r, { params: Promise.resolve({}) });
     },
     validPayload: { kEs: 'a', kEn: 'a', vEs: 'a', vEn: 'a' },
     model: 'resultItem',
@@ -165,19 +184,21 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   testimonials: {
     list: { GET: TestimonialsGET },
     item: { PUT: TestimonialsPUT, DELETE: TestimonialsDELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({
-          quoteEs: 'a',
-          quoteEn: 'a',
-          roleEs: 'a',
-          roleEn: 'a',
-          sectorEs: 'a',
-          sectorEn: 'a',
-        }),
-      });
-      return TestimonialsPOST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({
+            quoteEs: 'a',
+            quoteEn: 'a',
+            roleEs: 'a',
+            roleEn: 'a',
+            sectorEs: 'a',
+            sectorEn: 'a',
+          }),
+        });
+      return TestimonialsPOST(r, { params: Promise.resolve({}) });
     },
     validPayload: {
       quoteEs: 'a',
@@ -192,12 +213,20 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   timeline: {
     list: { GET: TimelineGET },
     item: { PUT: TimelinePUT, DELETE: TimelineDELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({ period: 'a', titleEs: 'a', titleEn: 'a', bodyEs: 'a', bodyEn: 'a' }),
-      });
-      return TimelinePOST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({
+            period: 'a',
+            titleEs: 'a',
+            titleEn: 'a',
+            bodyEs: 'a',
+            bodyEn: 'a',
+          }),
+        });
+      return TimelinePOST(r, { params: Promise.resolve({}) });
     },
     validPayload: { period: 'a', titleEs: 'a', titleEn: 'a', bodyEs: 'a', bodyEn: 'a' },
     model: 'timelineItem',
@@ -205,12 +234,14 @@ const COLLECTIONS: Record<string, CrudModule & { POST: () => Promise<Response> }
   faqs: {
     list: { GET: FaqsGET },
     item: { PUT: FaqsPUT, DELETE: FaqsDELETE },
-    POST: async () => {
-      const req = new Request('https://x.com', {
-        method: 'POST',
-        body: JSON.stringify({ qEs: 'a', qEn: 'a', aEs: 'a', aEn: 'a' }),
-      });
-      return FaqsPOST(req, { params: Promise.resolve({}) });
+    POST: async (req?: Request) => {
+      const r =
+        req ??
+        new Request('https://x.com', {
+          method: 'POST',
+          body: JSON.stringify({ qEs: 'a', qEn: 'a', aEs: 'a', aEn: 'a' }),
+        });
+      return FaqsPOST(r, { params: Promise.resolve({}) });
     },
     validPayload: { qEs: 'a', qEn: 'a', aEs: 'a', aEn: 'a' },
     model: 'faqItem',
@@ -289,11 +320,7 @@ describe('Admin collection CRUD', () => {
 
       it('returns 422 on missing body', async () => {
         const req = new Request('https://x.com', { method: 'POST' });
-        // We have to call the route directly
-        const routeModule = (await import(`@/app/api/admin/${slug}/route`)) as {
-          POST: (r: Request) => Promise<Response>;
-        };
-        const res = await routeModule.POST(req);
+        const res = await coll.POST(req);
         expect(res.status).toBe(422);
       });
     });
