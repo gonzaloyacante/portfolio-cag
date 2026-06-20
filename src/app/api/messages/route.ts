@@ -70,7 +70,12 @@ export async function POST(req: Request) {
           (phone ? `<p><strong>Teléfono:</strong> ${escapeHtml(phone)}</p>` : '') +
           `<hr/><p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>`,
       })
-      .catch(() => null);
+      .catch((err: unknown) => {
+        // Don't fail the request — the message is already persisted.
+        // But surface the error in logs so the operator notices misconfigs.
+        console.error('[contact] Resend send failed:', err);
+        return null;
+      });
   }
 
   return NextResponse.json({ success: true });

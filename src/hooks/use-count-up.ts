@@ -8,10 +8,20 @@ export function useCountUp(
 ): [React.RefObject<HTMLDivElement | null>, string] {
   const ref = useRef<HTMLDivElement>(null);
   const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(() => typeof IntersectionObserver === 'undefined');
+  // Always start false on both server and client to avoid a hydration
+  // mismatch. The IntersectionObserver effect below flips it to true
+  // when the element scrolls into view.
+  const [started, setStarted] = useState(false);
   const reduced = useReducedMotion();
 
   useEffect(() => {
+    // No IntersectionObserver → render the final value directly without
+    // animation. Defer the state update to a microtask so we don't
+    // setState synchronously inside an effect (React 19 lint rule).
+    if (typeof IntersectionObserver === 'undefined') {
+      queueMicrotask(() => setStarted(true));
+      return;
+    }
     const node = ref.current;
     if (!node) return;
     const obs = new IntersectionObserver(

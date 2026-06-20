@@ -111,13 +111,13 @@ export const brandSchema = z.object({
 });
 
 export const contactInfoUpdateSchema = z.object({
-  name: z.string().min(1).optional(),
-  phoneDisplay: z.string().optional(),
-  whatsappNumber: z.string().optional(),
-  email: z.string().email().optional(),
-  linkedinUrl: z.string().url().optional(),
-  linkedinHandle: z.string().optional(),
-  location: z.string().optional(),
+  name: z.string().min(1).nullish(),
+  phoneDisplay: z.string().nullish(),
+  whatsappNumber: z.string().nullish(),
+  email: z.string().email().nullish(),
+  linkedinUrl: z.string().url().or(z.literal('')).nullish(),
+  linkedinHandle: z.string().nullish(),
+  location: z.string().nullish(),
 });
 
 export const sectionMetaUpdateSchema = z.object({

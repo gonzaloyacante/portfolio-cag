@@ -287,7 +287,7 @@ pnpm test          # Todos los tests pasan
 | `CLOUDINARY_API_KEY` | API key Cloudinary | Fase media |
 | `CLOUDINARY_API_SECRET` | API secret Cloudinary | Fase media |
 | `RESEND_API_KEY` | Emails transaccionales | Fase email |
-| `RESEND_FROM` | Email remitente | Fase email |
+| `RESEND_FROM_EMAIL` | Email remitente | Fase email |
 | `NEXT_PUBLIC_GA4_ID` | Google Analytics 4 | Fase analytics |
 
 ---

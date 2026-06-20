@@ -24,9 +24,22 @@ export const PUT = withAdminAuth(async (req) => {
   const existing = await prisma.contactInfo.findFirst();
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+  // Most ContactInfo columns are non-nullable in Prisma. A `null` from
+  // the client means "clear this field", which we model as an empty
+  // string for non-nullable columns. Only `linkedinUrl` is nullable.
+  const { linkedinUrl, ...rest } = parsed.data;
+  const data: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (value === undefined) continue;
+    data[key] = value === null ? '' : value;
+  }
+  if (linkedinUrl !== undefined) {
+    data.linkedinUrl = linkedinUrl === '' ? null : linkedinUrl;
+  }
+
   const updated = await prisma.contactInfo.update({
     where: { id: existing.id },
-    data: parsed.data,
+    data,
   });
   revalidateLanding();
   return NextResponse.json(updated);

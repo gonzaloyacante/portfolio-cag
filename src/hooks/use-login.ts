@@ -20,7 +20,13 @@ export function useLogin() {
       const { error } = await authClient.signIn.email({ email, password, callbackURL: '/admin' });
       if (error) {
         const code = (error as { code?: string }).code;
-        if (code === 'TWO_FACTOR_REQUIRED') return;
+        if (code === 'TWO_FACTOR_REQUIRED') {
+          // `authClient.signIn.email` does not trigger the plugin's
+          // `onTwoFactorRedirect` callback — only `authClient.signIn`
+          // does. Redirect explicitly so the TOTP form is shown.
+          router.replace('/admin/login?step=2fa');
+          return;
+        }
         form.setError('root', { message: 'Credenciales inválidas.' });
       } else {
         router.replace('/admin');

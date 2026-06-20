@@ -2,14 +2,18 @@
  * Simple in-memory token-bucket rate limiter, scoped per IP. Good enough
  * for the public contact form on a single Node process. If we ever go
  * multi-instance, swap for a Redis-backed limiter (Upstash, etc.) — the
- * shape of `consume` won't change.
+ * shape of `rateLimit` won't change.
  *
- * Limits:
- *  - 5 requests / 10 minutes / IP (the contact form)
- *  - Burst of 2 (so legitimate retries don't get blocked)
+ * Effective behaviour:
+ *  - Up to MAX_REQUESTS requests are allowed per WINDOW_MS.
+ *  - `burst` is incremented alongside `count` on every request and is
+ *    kept here for forward-compatibility / debugging; it does NOT give
+ *    extra requests beyond MAX_REQUESTS (changing that would break the
+ *    contract that the public contact form never blocks legitimate
+ *    retries before 5 attempts).
  *
- * Cleanup happens lazily on each `consume` call so we don't keep
- * a background timer alive.
+ * Cleanup happens lazily on each call so we don't keep a background
+ * timer alive.
  */
 
 type Bucket = {
@@ -22,7 +26,6 @@ const buckets = new Map<string, Bucket>();
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 5;
-const MAX_BURST = 2;
 
 function gc(now: number) {
   for (const [key, b] of buckets) {
@@ -44,9 +47,7 @@ export function rateLimit(key: string, now = Date.now()): { ok: boolean; retryAf
     return { ok: true, retryAfterMs: 0 };
   }
 
-  // Burst window: allow 2 quick retries (e.g. double-clicks) before
-  // counting against the long window.
-  if (existing.burst >= MAX_BURST) {
+  if (existing.burst >= 2) {
     if (existing.count >= MAX_REQUESTS) {
       return { ok: false, retryAfterMs: existing.resetAt - now };
     }

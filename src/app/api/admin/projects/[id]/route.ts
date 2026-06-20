@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { handlePrismaError } from '@/lib/api-error';
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
 import { revalidateLanding } from '@/lib/revalidate';
@@ -19,8 +20,8 @@ export const PUT = withAdminAuth(async (req, { params }) => {
     const item = await prisma.project.update({ where: { id }, data: parsed.data });
     revalidateLanding();
     return NextResponse.json(item);
-  } catch {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  } catch (err) {
+    return handlePrismaError(err, 'update');
   }
 });
 
@@ -30,7 +31,7 @@ export const DELETE = withAdminAuth(async (_req, { params }) => {
     await prisma.project.delete({ where: { id } });
     revalidateLanding();
     return new NextResponse(null, { status: 204 });
-  } catch {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  } catch (err) {
+    return handlePrismaError(err, 'delete');
   }
 });

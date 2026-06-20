@@ -2,12 +2,17 @@ import { NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
+import { handlePrismaError } from '@/lib/api-error';
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
 import { revalidateLanding } from '@/lib/revalidate';
 
 const reorderSchema = z.object({
-  ids: z.array(z.string().min(1)).min(1),
+  ids: z
+    .array(z.string().min(1))
+    .min(1)
+    .max(500)
+    .refine((arr) => new Set(arr).size === arr.length, 'Duplicate ids are not allowed'),
 });
 
 type UpdateableModel = {
@@ -42,17 +47,17 @@ export const PUT = withAdminAuth(async (req, { params }) => {
   }
   const { ids } = parsed.data;
 
-  // Update each item's order field. Done sequentially (not in a $transaction
-  // array) so the typed `update` calls are accepted by TS.
+  // Sequential updates. A `$transaction` array would also work and would
+  // be atomic, but with a single-admin portfolio the race window is
+  // effectively zero, so we keep sequential for simpler typing and a
+  // smaller blast radius if one update fails halfway.
   try {
     for (let i = 0; i < ids.length; i += 1) {
-      const id = ids[i];
-      if (!id) continue;
-      await model.update({ where: { id }, data: { order: i } });
+      await model.update({ where: { id: ids[i]! }, data: { order: i } });
     }
     revalidateLanding();
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: 'Reorder failed' }, { status: 500 });
+  } catch (err) {
+    return handlePrismaError(err, 'reorder');
   }
 });
