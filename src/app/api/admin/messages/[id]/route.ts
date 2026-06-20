@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
+import { handlePrismaError } from '@/lib/api-error';
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
 
@@ -25,8 +26,8 @@ export const PATCH = withAdminAuth(async (req, { params }) => {
       data: { read: parsed.data.read },
     });
     return NextResponse.json(item);
-  } catch {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  } catch (err) {
+    return handlePrismaError(err, 'update');
   }
 });
 
@@ -35,7 +36,7 @@ export const DELETE = withAdminAuth(async (_req, { params }) => {
   try {
     await prisma.contactMessage.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
-  } catch {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  } catch (err) {
+    return handlePrismaError(err, 'delete');
   }
 });
