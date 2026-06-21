@@ -1,24 +1,19 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { z } from 'zod/v4';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import axiosInstance from '@/lib/axios';
+import { emailSettingsFormSchema, type EmailSettingsFormValues } from '@/validations/admin';
 
-export const emailSettingsSchema = z.object({
-  notificationEmail: z.union([z.email('Email inválido'), z.literal('')]),
-  notificationsEnabled: z.boolean(),
-});
+export { emailSettingsFormSchema } from '@/validations/admin';
+export type { EmailSettingsFormValues } from '@/validations/admin';
 
-export type EmailSettingsValues = z.infer<typeof emailSettingsSchema>;
-
-export function useEmailSettingsForm(initial: EmailSettingsValues) {
+export function useEmailSettingsForm(initial: EmailSettingsFormValues) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
-  const form = useForm<EmailSettingsValues, unknown, EmailSettingsValues>({
-    resolver: zodResolver(emailSettingsSchema),
+  const form = useForm<EmailSettingsFormValues>({
+    resolver: zodResolver(emailSettingsFormSchema),
     defaultValues: initial,
   });
 

@@ -7,10 +7,11 @@ import { SectionGroup } from '@/components/admin/SectionGroup';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
-import { type SystemSettingsValues, useSystemSettingsForm } from '@/hooks/use-system-settings-form';
+import { useSystemSettingsForm } from '@/hooks/use-system-settings-form';
+import type { SystemSettingsFormValues } from '@/validations/admin';
 
 type SystemSettingsFormProps = {
-  initial: SystemSettingsValues;
+  initial: SystemSettingsFormValues;
 };
 
 export function SystemSettingsForm({ initial }: SystemSettingsFormProps) {

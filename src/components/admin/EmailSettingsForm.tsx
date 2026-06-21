@@ -15,10 +15,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { type EmailSettingsValues, useEmailSettingsForm } from '@/hooks/use-email-settings-form';
+import { useEmailSettingsForm } from '@/hooks/use-email-settings-form';
+import type { EmailSettingsFormValues } from '@/validations/admin';
 
 type EmailSettingsFormProps = {
-  initial: EmailSettingsValues;
+  initial: EmailSettingsFormValues;
 };
 
 export function EmailSettingsForm({ initial }: EmailSettingsFormProps) {
