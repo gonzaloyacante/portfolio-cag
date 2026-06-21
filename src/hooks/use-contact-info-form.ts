@@ -1,28 +1,18 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { z } from 'zod/v4';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import axiosInstance from '@/lib/axios';
+import { contactInfoFormSchema, type ContactInfoFormValues } from '@/validations/admin';
 
-export const contactInfoFormSchema = z.object({
-  name: z.string().min(1, 'Requerido'),
-  phoneDisplay: z.string().min(1, 'Requerido'),
-  whatsappNumber: z.string().min(1, 'Requerido'),
-  email: z.email('Email inválido'),
-  linkedinUrl: z.url('URL inválida'),
-  linkedinHandle: z.string().min(1, 'Requerido'),
-  location: z.string().min(1, 'Requerido'),
-});
-
-export type ContactInfoFormValues = z.infer<typeof contactInfoFormSchema>;
+export { contactInfoFormSchema } from '@/validations/admin';
+export type { ContactInfoFormValues } from '@/validations/admin';
 
 export function useContactInfoForm(initial: ContactInfoFormValues) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
-  const form = useForm<ContactInfoFormValues, unknown, ContactInfoFormValues>({
+  const form = useForm<ContactInfoFormValues>({
     resolver: zodResolver(contactInfoFormSchema),
     defaultValues: initial,
   });

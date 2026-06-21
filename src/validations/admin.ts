@@ -1,11 +1,50 @@
 import { z } from 'zod';
 
-const heroStatSchema = z.object({
-  value: z.string().min(1),
-  labelEs: z.string().min(1),
-  labelEn: z.string().min(1),
+export const heroStatSchema = z.object({
+  value: z.string().min(1, 'Requerido'),
+  labelEs: z.string().min(1, 'Requerido'),
+  labelEn: z.string().min(1, 'Requerido'),
   order: z.number().int().default(0),
 });
+
+/**
+ * Full schema used by the HeroForm on the client. Every text field is
+ * required so the admin can't save with empty placeholders. The server
+ * route uses `heroUpdateSchema` (partial of this) because it accepts
+ * sparse updates from the API surface.
+ */
+export const heroFormSchema = z.object({
+  overlineEs: z.string().min(1, 'Requerido'),
+  overlineEn: z.string().min(1, 'Requerido'),
+  name: z.string().min(1, 'Requerido'),
+  headlineEs: z.string().min(1, 'Requerido'),
+  headlineEn: z.string().min(1, 'Requerido'),
+  summaryEs: z.string().min(1, 'Requerido'),
+  summaryEn: z.string().min(1, 'Requerido'),
+  ctaWhatsappEs: z.string().min(1, 'Requerido'),
+  ctaWhatsappEn: z.string().min(1, 'Requerido'),
+  ctaEmailEs: z.string().min(1, 'Requerido'),
+  ctaEmailEn: z.string().min(1, 'Requerido'),
+  ctaLinkedinEs: z.string().min(1, 'Requerido'),
+  ctaLinkedinEn: z.string().min(1, 'Requerido'),
+  portraitUrl: z
+    .string()
+    .url('URL inválida')
+    .nullish()
+    .or(z.literal('').transform(() => null)),
+  stats: z.array(heroStatSchema),
+});
+
+/**
+ * `HeroFormValues` is the *output* type of the schema (after defaults are
+ * applied). The form hook uses this for `defaultValues` and the data
+ * delivered to `handleSubmit`. `HeroFormInput` is the *input* type — what
+ * raw form fields look like before validation. The two diverge because
+ * `heroStatSchema.order` has `.default(0)`, so input has `order?` while
+ * output has `order: number`.
+ */
+export type HeroFormValues = z.infer<typeof heroFormSchema>;
+export type HeroFormInput = z.input<typeof heroFormSchema>;
 
 export const heroUpdateSchema = z.object({
   overlineEs: z.string().min(1).optional(),
@@ -128,3 +167,42 @@ export const sectionMetaUpdateSchema = z.object({
   descEs: z.string().nullish(),
   descEn: z.string().nullish(),
 });
+
+/**
+ * Single source of truth for the admin forms. Each hook imports from
+ * here instead of re-declaring its own Zod schema — that's how we
+ * avoid the client/server drift that previously let some fields be
+ * required on the client and optional on the server (or vice versa).
+ */
+
+export const contactInfoFormSchema = z.object({
+  name: z.string().min(1, 'Requerido'),
+  phoneDisplay: z.string().min(1, 'Requerido'),
+  whatsappNumber: z.string().min(1, 'Requerido'),
+  email: z.email('Email inválido'),
+  linkedinUrl: z.url('URL inválida'),
+  linkedinHandle: z.string().min(1, 'Requerido'),
+  location: z.string().min(1, 'Requerido'),
+});
+export type ContactInfoFormValues = z.infer<typeof contactInfoFormSchema>;
+
+export const sectionMetaFormSchema = z.object({
+  overlineEs: z.string(),
+  overlineEn: z.string(),
+  titleEs: z.string(),
+  titleEn: z.string(),
+  descEs: z.string(),
+  descEn: z.string(),
+});
+export type SectionMetaFormValues = z.infer<typeof sectionMetaFormSchema>;
+
+export const emailSettingsFormSchema = z.object({
+  notificationEmail: z.union([z.email('Email inválido'), z.literal('')]),
+  notificationsEnabled: z.boolean(),
+});
+export type EmailSettingsFormValues = z.infer<typeof emailSettingsFormSchema>;
+
+export const systemSettingsFormSchema = z.object({
+  acceptingProjects: z.boolean(),
+});
+export type SystemSettingsFormValues = z.infer<typeof systemSettingsFormSchema>;

@@ -1,27 +1,18 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { z } from 'zod/v4';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import axiosInstance from '@/lib/axios';
+import { sectionMetaFormSchema, type SectionMetaFormValues } from '@/validations/admin';
 
-const sectionMetaFormSchema = z.object({
-  overlineEs: z.string(),
-  overlineEn: z.string(),
-  titleEs: z.string(),
-  titleEn: z.string(),
-  descEs: z.string(),
-  descEn: z.string(),
-});
-
-export type SectionMetaFormValues = z.infer<typeof sectionMetaFormSchema>;
+export { sectionMetaFormSchema } from '@/validations/admin';
+export type { SectionMetaFormValues } from '@/validations/admin';
 
 export function useSectionMetaForm(slug: string, initial: SectionMetaFormValues) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
-  const form = useForm<SectionMetaFormValues, unknown, SectionMetaFormValues>({
+  const form = useForm<SectionMetaFormValues>({
     resolver: zodResolver(sectionMetaFormSchema),
     defaultValues: initial,
   });

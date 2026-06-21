@@ -1,23 +1,19 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { z } from 'zod/v4';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import axiosInstance from '@/lib/axios';
+import { systemSettingsFormSchema, type SystemSettingsFormValues } from '@/validations/admin';
 
-export const systemSettingsSchema = z.object({
-  acceptingProjects: z.boolean(),
-});
+export { systemSettingsFormSchema } from '@/validations/admin';
+export type { SystemSettingsFormValues } from '@/validations/admin';
 
-export type SystemSettingsValues = z.infer<typeof systemSettingsSchema>;
-
-export function useSystemSettingsForm(initial: SystemSettingsValues) {
+export function useSystemSettingsForm(initial: SystemSettingsFormValues) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
-  const form = useForm<SystemSettingsValues, unknown, SystemSettingsValues>({
-    resolver: zodResolver(systemSettingsSchema),
+  const form = useForm<SystemSettingsFormValues>({
+    resolver: zodResolver(systemSettingsFormSchema),
     defaultValues: initial,
   });
 
