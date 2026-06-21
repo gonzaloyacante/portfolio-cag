@@ -353,7 +353,32 @@ git commit -m "fix(scope): descripción"
 - Se propone Auth.js, Drizzle, o cualquier alternativa a las libs del stack
 - Un pre-commit hook falla — no usar `--no-verify`
 - Tests fallan por motivo no relacionado con la tarea actual
-- Se intenta hacer push directo a `develop` o `main`
+- Se intenta hacer push con `--force` o `--no-verify`
+
+---
+
+## 8.1 Workflow de branches
+
+**Regla de oro:** la rama de trabajo diaria es `develop`. `main` solo recibe
+merges para releases.
+
+```
+# Flujo normal
+git checkout develop          # siempre terminar una tarea aquí
+git commit -m "feat: ..."
+git push origin develop       # push directo a develop — sí, sin preguntar
+
+# Solo cuando hay un release aprobado
+git checkout main
+git merge --no-ff develop     # o el commit específico
+git push origin main
+git checkout develop          # ← siempre volver a develop al final
+```
+
+Push directo a `develop` o `main` **sin `--force`** está permitido y es el
+camino esperado. La regla de "no push directo" original se refería sólo a
+`--force`; si estás parado en la rama y haces un push normal, el trabajo no
+se pierde. La única prohibición real es `git push --force` en `develop`.
 
 ---
 
@@ -366,7 +391,7 @@ git commit -m "fix(scope): descripción"
 ❌ console.log en producción     → solo console.error o logger
 ❌ strings hardcodeados en UI    → siempre useTranslations()
 ❌ git commit --no-verify        → nunca saltear hooks
-❌ git push --force en develop   → nunca
+❌ git push --force              → nunca en ninguna rama (usar `git push --force-with-lease` solo si es estrictamente necesario y con confirmación explícita)
 ❌ prisma db push en producción  → usar migrate deploy
 ❌ Auth.js / NextAuth            → este proyecto usa Better Auth
 ❌ Drizzle                       → este proyecto usa Prisma
