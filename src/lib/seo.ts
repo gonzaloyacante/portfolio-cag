@@ -1,10 +1,18 @@
 import type { Metadata } from 'next';
 
+import type { SeoConfig } from '@/generated/prisma/client';
+
 /**
  * Centralized SEO helpers. The public landing builds a rich Metadata
  * object with proper OG / Twitter / canonical / hreflang tags and ships
  * JSON-LD structured data (Person + WebSite + BreadcrumbList) so the
  * site is well-indexed and shows rich cards when shared.
+ *
+ * Per-page overrides (title/description/ogImage/noIndex) are stored in
+ * the SeoConfig table. The public `[locale]/page.tsx` `generateMetadata`
+ * calls `seoMetadataFromConfig(config, locale)` to merge DB values on
+ * top of the defaults below. Keeping this file free of Prisma imports
+ * means unit tests can exercise it without a database connection.
  */
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://portfolio-cag.app';
@@ -12,6 +20,45 @@ const DEFAULT_OG_IMAGE = `${APP_URL}/opengraph-image`;
 
 const SITE_NAME = 'Carlos A. Guerra — Portfolio';
 const TWITTER_HANDLE = '@carlosguerra';
+
+/** Pick the ES or EN SEO field value, falling back to the supplied default. */
+function pickLocaleField(
+  config: SeoConfig | null,
+  field: 'title' | 'desc',
+  locale: 'es' | 'en',
+  fallback: string
+): string {
+  if (!config) return fallback;
+  const value =
+    locale === 'en'
+      ? field === 'title'
+        ? config.titleEn
+        : config.descEn
+      : field === 'title'
+        ? config.titleEs
+        : config.descEs;
+  return value ?? fallback;
+}
+
+/**
+ * Build a Next.js Metadata object that respects per-page SEO overrides
+ * stored in the SeoConfig table. The caller queries the config (so the
+ * Prisma client is loaded only on the server) and passes it in.
+ */
+export function seoMetadataFromConfig(
+  config: SeoConfig | null,
+  locale: 'es' | 'en',
+  defaults: { title: string; description: string }
+): Metadata {
+  return {
+    title: pickLocaleField(config, 'title', locale, defaults.title),
+    description: pickLocaleField(config, 'desc', locale, defaults.description),
+    robots: config?.noIndex ? { index: false, follow: false } : { index: true, follow: true },
+    openGraph: {
+      images: [config?.ogImage ?? DEFAULT_OG_IMAGE],
+    },
+  };
+}
 
 type BuildMetadataInput = {
   locale: 'es' | 'en';

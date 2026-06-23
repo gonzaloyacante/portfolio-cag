@@ -27,6 +27,7 @@ import {
   professionalServiceJsonLd,
   projectsItemListJsonLd,
   servicesItemListJsonLd,
+  seoMetadataFromConfig,
   websiteJsonLd,
 } from '@/lib/seo';
 
@@ -35,7 +36,11 @@ type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'meta' });
-  return { title: t('title'), description: t('description') };
+  const seo = await prisma.seoConfig.findUnique({ where: { slug: 'home' } });
+  return seoMetadataFromConfig(seo, locale as 'es' | 'en', {
+    title: t('title'),
+    description: t('description'),
+  });
 }
 
 function pickMeta(metas: SectionMeta[], slug: string, isEn: boolean) {
