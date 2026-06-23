@@ -11,6 +11,7 @@ import { FAQ } from '@/components/landing/FAQ';
 import { Footer } from '@/components/landing/Footer';
 import { Header } from '@/components/landing/Header';
 import { Hero } from '@/components/landing/Hero';
+import { PageViewTracker } from '@/components/landing/PageViewTracker';
 import { Process } from '@/components/landing/Process';
 import { Projects } from '@/components/landing/Projects';
 import { Results } from '@/components/landing/Results';
@@ -307,6 +308,7 @@ export default async function LandingPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[6]) }}
       />
       <Header />
+      <PageViewTracker locale={locale} />
       <SectionIndex />
       <main id="main-content">
         {hero && contact && (

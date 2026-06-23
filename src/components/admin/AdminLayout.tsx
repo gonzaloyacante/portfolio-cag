@@ -56,6 +56,7 @@ const ICON_BY_HREF: Record<string, LucideIcon> = {
   '/admin/sections': Tags,
   '/admin/media': ImageIcon,
   '/admin/email-settings': Bell,
+  '/admin/analytics': Activity,
   '/admin/system': Sliders,
   '/admin/seo': Globe,
   '/admin/security': ShieldCheck,
