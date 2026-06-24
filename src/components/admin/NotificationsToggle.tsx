@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Bell, BellOff, Loader2 } from 'lucide-react';
@@ -16,11 +15,21 @@ import { cn } from '@/lib/utils';
  * Sits in the AdminLayout header. On iOS it requires the PWA to be
  * installed via "Add to Home Screen" — `Notification.permission` will
  * be 'default' until then, and the subscribe call will fail.
+ *
+ * Labels are hardcoded in Spanish because the admin panel is single-locale
+ * (no `/es|/en` prefix). Hardcoding avoids wrapping `admin/layout.tsx`
+ * with `NextIntlClientProvider` just for this one component.
  */
+const LABELS = {
+  enable: 'Activar notificaciones',
+  disable: 'Notificaciones activas',
+  blocked: 'Bloqueadas en el navegador',
+  loading: 'Verificando soporte…',
+} as const;
+
 export function NotificationsToggle() {
   const { state, subscribe, unsubscribe } = usePushSubscription();
   const [busy, setBusy] = useState(false);
-  const t = useTranslations('admin');
 
   if (state.kind === 'unsupported' || state.kind === 'loading') {
     if (state.kind === 'unsupported') return null;
@@ -29,7 +38,7 @@ export function NotificationsToggle() {
         variant="ghost"
         size="sm"
         disabled
-        aria-label={t('notifications.loading')}
+        aria-label={LABELS.loading}
         className="text-muted-foreground/60 gap-1.5 px-2.5"
       >
         <Loader2 size={13} className="animate-spin" />
@@ -50,11 +59,7 @@ export function NotificationsToggle() {
     }
   };
 
-  const label = subscribed
-    ? t('notifications.disable')
-    : denied
-      ? t('notifications.blocked')
-      : t('notifications.enable');
+  const label = subscribed ? LABELS.disable : denied ? LABELS.blocked : LABELS.enable;
 
   return (
     <Button
