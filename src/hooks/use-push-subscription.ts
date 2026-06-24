@@ -51,6 +51,12 @@ export function usePushSubscription(): {
         if (!cancelled) setState({ kind: 'unsupported', reason: 'Push API not available' });
         return;
       }
+      // If the user already denied permission at the OS level, don't even
+      // pretend we can ask — render the "blocked" state directly.
+      if (Notification.permission === 'denied') {
+        if (!cancelled) setState({ kind: 'denied' });
+        return;
+      }
       try {
         const reg = await navigator.serviceWorker.register(SW_URL, { scope: '/admin/' });
         // Wait for the SW to become active so getSubscription reflects the
